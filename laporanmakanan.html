@@ -40,36 +40,41 @@
   <style>
     @page {
       size: A4 portrait;
-      margin: 10mm 12mm 10mm 12mm;
+      margin: 8mm 10mm 8mm 10mm;
     }
     @media print {
-      body {
+      html, body {
         background-color: #ffffff !important;
         color: #000000 !important;
         padding: 0 !important;
         margin: 0 !important;
+        width: 100% !important;
       }
-      .no-print {
+      /* Sembunyikan semua elemen aplikasi luar dari cetakan */
+      .no-print, header, #formColumn, #toast, #archiveModal, #sampleMenu, nav {
         display: none !important;
       }
-      .print-only-container {
+      /* Paksa paparan lembaran A4 sahaja kelihatan penuh dan kemas */
+      #previewColumn, .print-only-container {
         display: block !important;
         width: 100% !important;
         max-width: 100% !important;
         margin: 0 !important;
         padding: 0 !important;
-      }
-      .page-break {
-        page-break-inside: avoid;
-        break-inside: avoid;
+        position: static !important;
       }
       .official-doc-sheet {
         box-shadow: none !important;
         border: none !important;
         padding: 0 !important;
+        margin: 0 auto !important;
         width: 100% !important;
         max-width: 100% !important;
         min-height: auto !important;
+      }
+      .page-break {
+        page-break-inside: avoid;
+        break-inside: avoid;
       }
     }
 
@@ -159,8 +164,8 @@
           </div>
         </div>
 
-        <!-- Hidden JSON file input -->
-        <input type="file" id="jsonFileInput" accept=".json" class="hidden" onchange="handleJsonImport(event)">
+        <!-- Hidden JSON file input with broader mobile mime support -->
+        <input type="file" id="jsonFileInput" accept=".json,application/json,text/plain" class="hidden" onchange="handleJsonImport(event)">
 
         <button onclick="triggerImportJson()" type="button" title="Muat naik fail JSON" class="inline-flex items-center px-2.5 py-2 border border-slate-300 text-xs sm:text-sm font-medium rounded-lg text-slate-700 bg-white hover:bg-slate-50 shadow-sm transition">
           <svg class="w-4 h-4 sm:mr-1.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -247,8 +252,8 @@
   <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
-      <!-- LEFT COLUMN: EDIT FORM -->
-      <section id="formColumn" class="lg:col-span-6 space-y-6">
+      <!-- LEFT COLUMN: EDIT FORM (marked as no-print) -->
+      <section id="formColumn" class="no-print lg:col-span-6 space-y-6">
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 sm:p-6 space-y-6">
           <div class="flex items-center justify-between border-b border-slate-100 pb-4">
             <div>
@@ -667,7 +672,6 @@
       }
 
       getDataUrl() {
-        // Check if blank
         const blank = document.createElement('canvas');
         blank.width = this.canvas.width;
         blank.height = this.canvas.height;
@@ -686,22 +690,18 @@
       canvas.height = 420;
       const ctx = canvas.getContext('2d');
 
-      // Card Background
       ctx.fillStyle = colorBg;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Border outline
       ctx.strokeStyle = '#cbd5e1';
       ctx.lineWidth = 5;
       ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
 
-      // Icon Circle
       ctx.fillStyle = colorAccent;
       ctx.beginPath();
       ctx.arc(320, 150, 48, 0, Math.PI * 2);
       ctx.fill();
 
-      // Camera shape
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(298, 135, 44, 32);
       ctx.beginPath();
@@ -709,13 +709,11 @@
       ctx.fillStyle = colorAccent;
       ctx.fill();
 
-      // Main Text
       ctx.fillStyle = '#0f172a';
       ctx.font = 'bold 22px Inter, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(text, 320, 260);
 
-      // Subtext
       ctx.fillStyle = '#475569';
       ctx.font = '15px Inter, sans-serif';
       ctx.fillText(subtext, 320, 295);
@@ -878,7 +876,6 @@
       document.getElementById('fPembekal').value = reportData.metadata.pembekalKaterer || '';
       document.getElementById('fTahapRisiko').value = reportData.metadata.tahapRisiko || 'Sederhana';
 
-      // Issue Checkboxes
       const checkboxes = document.querySelectorAll('input[name="issueCat"]');
       checkboxes.forEach(cb => {
         cb.checked = (reportData.kategoriIsu || []).includes(cb.value);
@@ -887,7 +884,6 @@
       document.getElementById('fRingkasan').value = reportData.ringkasanKejadian || '';
       document.getElementById('fCadangan').value = reportData.tindakanCadangan || '';
 
-      // Observations
       const obsContainer = document.getElementById('observationContainer');
       obsContainer.innerHTML = '';
       if (reportData.hasilPemerhatian && reportData.hasilPemerhatian.length > 0) {
@@ -896,10 +892,8 @@
         addObservationField('');
       }
 
-      // Photos
       renderUploadedImagesList();
 
-      // Signatures
       document.getElementById('fPelaporNama').value = reportData.pengesahan?.disediakanOleh?.nama || '';
       document.getElementById('fPelaporJawatan').value = reportData.pengesahan?.disediakanOleh?.jawatan || '';
       document.getElementById('fPelaporTarikh').value = reportData.pengesahan?.disediakanOleh?.tarikh || '';
@@ -908,7 +902,6 @@
       document.getElementById('fPengesahJawatan').value = reportData.pengesahan?.disahkanOleh?.jawatan || '';
       document.getElementById('fPengesahTarikh').value = reportData.pengesahan?.disahkanOleh?.tarikh || '';
 
-      // Load signatures to canvas pads
       if (padPelapor) padPelapor.load(reportData.pengesahan?.disediakanOleh?.tandatangan || "");
       if (padPengesah) padPengesah.load(reportData.pengesahan?.disahkanOleh?.tandatangan || "");
 
@@ -940,7 +933,6 @@
       updateLiveReport();
     }
 
-    /* Client-side Image compression helper */
     function compressImageFile(file, maxWidth = 1000, quality = 0.8) {
       return new Promise((resolve) => {
         const reader = new FileReader();
@@ -1205,9 +1197,7 @@
     function saveToStorage() {
       try {
         localStorage.setItem('aduan_makanan_draft', JSON.stringify(reportData));
-      } catch (e) {
-        // Quota exceeded or private browsing
-      }
+      } catch (e) {}
     }
 
     function loadFromStorage() {
@@ -1224,18 +1214,22 @@
       return false;
     }
 
-    /* JSON Import & Export */
+    /* JSON Import & Export using Blobs */
     function exportToJson() {
       updateLiveReport();
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(reportData, null, 2));
+      const jsonContent = JSON.stringify(reportData, null, 2);
+      const blob = new Blob([jsonContent], { type: "application/json;charset=utf-8" });
+      const blobUrl = URL.createObjectURL(blob);
+      
       const downloadAnchor = document.createElement('a');
       const filename = `Laporan_Aduan_${(reportData.metadata.noRujukan || 'AD').replace(/[^a-zA-Z0-9_-]/g, '_')}_${reportData.metadata.tarikhAduan || 'tarikh'}.json`;
 
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", filename);
+      downloadAnchor.href = blobUrl;
+      downloadAnchor.download = filename;
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
       downloadAnchor.remove();
+      URL.revokeObjectURL(blobUrl);
 
       showToast("Data fail berjaya dieksport ke format JSON.");
     }
@@ -1245,24 +1239,65 @@
     }
 
     function handleJsonImport(event) {
-      const file = event.target.files[0];
+      const file = event.target.files && event.target.files[0];
       if (!file) return;
 
       const reader = new FileReader();
       reader.onload = function(e) {
         try {
-          const parsed = JSON.parse(e.target.result);
+          let content = e.target.result;
+          if (typeof content !== 'string') return;
+          
+          if (content.charCodeAt(0) === 0xFEFF) {
+            content = content.slice(1);
+          }
+
+          const parsed = JSON.parse(content);
           if (parsed && typeof parsed === 'object') {
-            reportData = parsed;
+            reportData = {
+              metadata: {
+                noRujukan: parsed.metadata?.noRujukan || 'AD/MTGH/01',
+                tarikhAduan: parsed.metadata?.tarikhAduan || '',
+                masaAduan: parsed.metadata?.masaAduan || '',
+                lokasiPremis: parsed.metadata?.lokasiPremis || '',
+                programSesi: parsed.metadata?.programSesi || 'Makanan Tengahari',
+                pembekalKaterer: parsed.metadata?.pembekalKaterer || '',
+                tahapRisiko: parsed.metadata?.tahapRisiko || 'Sederhana'
+              },
+              kategoriIsu: Array.isArray(parsed.kategoriIsu) ? parsed.kategoriIsu : [],
+              ringkasanKejadian: parsed.ringkasanKejadian || '',
+              hasilPemerhatian: Array.isArray(parsed.hasilPemerhatian) ? parsed.hasilPemerhatian : [],
+              buktiGambar: Array.isArray(parsed.buktiGambar) ? parsed.buktiGambar : [],
+              tindakanCadangan: parsed.tindakanCadangan || '',
+              pengesahan: {
+                disediakanOleh: {
+                  nama: parsed.pengesahan?.disediakanOleh?.nama || '',
+                  jawatan: parsed.pengesahan?.disediakanOleh?.jawatan || '',
+                  tarikh: parsed.pengesahan?.disediakanOleh?.tarikh || '',
+                  tandatangan: parsed.pengesahan?.disediakanOleh?.tandatangan || ''
+                },
+                disahkanOleh: {
+                  nama: parsed.pengesahan?.disahkanOleh?.nama || '',
+                  jawatan: parsed.pengesahan?.disahkanOleh?.jawatan || '',
+                  tarikh: parsed.pengesahan?.disahkanOleh?.tarikh || '',
+                  tandatangan: parsed.pengesahan?.disahkanOleh?.tandatangan || ''
+                }
+              }
+            };
+
             populateFormFromState();
             saveToStorage();
-            showToast("Fail JSON berjaya diimport!");
+            showToast("Fail JSON berjaya diimport sepenuhnya!");
           } else {
             showToast("Struktur fail JSON tidak sah.", true);
           }
         } catch (err) {
-          showToast("Ralat membaca fail JSON.", true);
+          console.error(err);
+          showToast("Ralat membaca fail JSON: Sila pastikan fail sah.", true);
         }
+      };
+      reader.onerror = function() {
+        showToast("Gagal membaca fail dari peranti.", true);
       };
       reader.readAsText(file);
       event.target.value = '';
@@ -1310,7 +1345,6 @@
     }
 
     function updateLiveReport() {
-      // Gather metadata
       reportData.metadata.noRujukan = document.getElementById('fNoRujukan').value || 'AD/MTGH/01';
       reportData.metadata.tarikhAduan = document.getElementById('fTarikh').value;
       reportData.metadata.masaAduan = document.getElementById('fMasa').value;
@@ -1319,20 +1353,16 @@
       reportData.metadata.pembekalKaterer = document.getElementById('fPembekal').value;
       reportData.metadata.tahapRisiko = document.getElementById('fTahapRisiko').value;
 
-      // Gather categories
       const selectedCats = [];
       document.querySelectorAll('input[name="issueCat"]:checked').forEach(cb => selectedCats.push(cb.value));
       reportData.kategoriIsu = selectedCats;
 
-      // Gather text
       reportData.ringkasanKejadian = document.getElementById('fRingkasan').value;
       reportData.tindakanCadangan = document.getElementById('fCadangan').value;
 
-      // Gather observations
       const obsInputs = document.querySelectorAll('.obs-input');
       reportData.hasilPemerhatian = Array.from(obsInputs).map(inp => inp.value.trim()).filter(val => val.length > 0);
 
-      // Gather signatories
       reportData.pengesahan.disediakanOleh.nama = document.getElementById('fPelaporNama').value;
       reportData.pengesahan.disediakanOleh.jawatan = document.getElementById('fPelaporJawatan').value;
       reportData.pengesahan.disediakanOleh.tarikh = document.getElementById('fPelaporTarikh').value;
@@ -1341,7 +1371,6 @@
       reportData.pengesahan.disahkanOleh.jawatan = document.getElementById('fPengesahJawatan').value;
       reportData.pengesahan.disahkanOleh.tarikh = document.getElementById('fPengesahTarikh').value;
 
-      // Render to Document Preview elements
       document.getElementById('prevNoRujukan').textContent = reportData.metadata.noRujukan || '-';
       document.getElementById('prevTarikh').textContent = formatDateDisplay(reportData.metadata.tarikhAduan);
       document.getElementById('prevMasa').textContent = reportData.metadata.masaAduan || '-';
@@ -1349,7 +1378,6 @@
       document.getElementById('prevProgram').textContent = reportData.metadata.programSesi || '-';
       document.getElementById('prevPembekal').textContent = reportData.metadata.pembekalKaterer || '-';
 
-      // Status badge in header
       const riskBadge = document.getElementById('prevStatusRisiko');
       const riskVal = reportData.metadata.tahapRisiko || 'Sederhana';
       riskBadge.textContent = `RISIKO ${riskVal.toUpperCase()}`;
@@ -1361,7 +1389,6 @@
         riskBadge.className = 'font-bold uppercase px-2 py-0.5 rounded text-amber-700 bg-amber-50 border border-amber-200';
       }
 
-      // Kategori
       const prevKategori = document.getElementById('prevKategori');
       if (reportData.kategoriIsu.length > 0) {
         prevKategori.textContent = reportData.kategoriIsu.join('; ');
@@ -1369,11 +1396,9 @@
         prevKategori.textContent = 'Isu am / Tidak diklasifikasikan secara khusus';
       }
 
-      // Ringkasan
       const prevRingkasan = document.getElementById('prevRingkasan');
       prevRingkasan.textContent = reportData.ringkasanKejadian || 'Tiada ringkasan kejadian dinyatakan.';
 
-      // Pemerhatian
       const prevObsList = document.getElementById('prevPemerhatianList');
       prevObsList.innerHTML = '';
       if (reportData.hasilPemerhatian.length > 0) {
@@ -1389,7 +1414,6 @@
         prevObsList.appendChild(li);
       }
 
-      // Gambar Grid
       const grid = document.getElementById('prevGambarGrid');
       const nota = document.getElementById('prevNotaDokumentasi');
       grid.innerHTML = '';
@@ -1411,10 +1435,8 @@
         nota.textContent = 'Nota dokumentasi: Tiada fail gambar disertakan.';
       }
 
-      // Cadangan
       document.getElementById('prevCadangan').textContent = reportData.tindakanCadangan || 'Pihak berkaitan disarankan memantau dan mengambil langkah pembetulan sewajarnya.';
 
-      // Signatures
       document.getElementById('prevTandatanganNama').textContent = reportData.pengesahan.disediakanOleh.nama || '.....................................................';
       document.getElementById('prevTandatanganJawatan').textContent = reportData.pengesahan.disediakanOleh.jawatan || 'Guru / Pegawai Bertugas';
       document.getElementById('prevTandatanganTarikh').textContent = formatDateDisplay(reportData.pengesahan.disediakanOleh.tarikh) || '............................';
@@ -1423,7 +1445,6 @@
       document.getElementById('prevPengesahJawatan').textContent = reportData.pengesahan.disahkanOleh.jawatan || 'Pengurus / Guru Besar';
       document.getElementById('prevPengesahTarikh').textContent = formatDateDisplay(reportData.pengesahan.disahkanOleh.tarikh) || '............................';
 
-      // Digital Signature Render in Preview
       const imgSigPelapor = document.getElementById('prevSigPelapor');
       const phSigPelapor = document.getElementById('prevSigPelaporPlaceholder');
       if (reportData.pengesahan.disediakanOleh.tandatangan) {
@@ -1518,7 +1539,6 @@
 
     /* Application Initialization */
     window.addEventListener('DOMContentLoaded', () => {
-      // Initialize signature pads
       padPelapor = new SignaturePadHelper('canvasPelapor', (dataUrl) => {
         reportData.pengesahan.disediakanOleh.tandatangan = dataUrl;
         updateLiveReport();
@@ -1529,10 +1549,8 @@
         updateLiveReport();
       });
 
-      // Update archive count badge
       updateArchiveBadge();
 
-      // Try restore from storage or load default
       const hasRestored = loadFromStorage();
       if (!hasRestored) {
         loadSample(1);
